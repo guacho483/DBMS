@@ -99,7 +99,7 @@ public class Relazione {
     public static Relazione load(String path, String name) {
 
         try {
-            BufferedReader re = new BufferedReader(new FileReader(".csv"));
+            BufferedReader re = new BufferedReader(new FileReader(path + name + ".csv"));
             String line = re.readLine();
             String[] fn = line.split(",");
             Relazione res = new Relazione(name, fn);
@@ -117,6 +117,16 @@ public class Relazione {
         return null;
     }
 
+    public Relazione differenza(Relazione r) {
+        Relazione res = new Relazione("R1(differenza)", fields_name);
+        for (String[] row : this.data) {
+            if (!r.isDuplicate(row)) {
+                res.insert(row);
+            }
+        }
+        return res;
+    }
+
     private int getFieldIndex(String fn) {
         for (int i = 0; i < fields_name.length; i++) {
             if (fn.equals(fields_name[i])) return i;
@@ -126,7 +136,7 @@ public class Relazione {
 
     public Relazione selezione(String condizione) {
 
-        Relazione res = new Relazione("R1", fields_name);
+        Relazione res = new Relazione("R1(selezione)", fields_name);
         String[] cond = condizione.split(" ");
         int fi = getFieldIndex(cond[0]);
 
@@ -147,7 +157,7 @@ public class Relazione {
     }
 
     public Relazione proiezione(String[] fn) {
-        Relazione res = new Relazione("R1", fn);
+        Relazione res = new Relazione("R1(proiezione)", fn);
         int[] field_index = new int[fn.length];
 
         for (int i = 0; i < field_index.length; i++) {
@@ -165,7 +175,7 @@ public class Relazione {
 
 
     public Relazione union(Relazione r) {
-        Relazione res = new Relazione("R1", fields_name);
+        Relazione res = new Relazione("R1(union)", fields_name);
 
         for (String[] row : this.data) {
             res.insert(row);
@@ -180,7 +190,7 @@ public class Relazione {
         String[] new_fields = new String[this.fields_name.length + r.fields_name.length];
         System.arraycopy(this.fields_name, 0, new_fields, 0, this.fields_name.length);
         System.arraycopy(r.fields_name, 0, new_fields, this.fields_name.length, r.fields_name.length);
-        Relazione res = new Relazione("R1", new_fields);
+        Relazione res = new Relazione("R1(cross product)", new_fields);
         String[] new_row = new String[new_fields.length];
         for (String[] row1 : this.data) {
             System.arraycopy(row1, 0, new_row, 0, row1.length);
@@ -192,7 +202,7 @@ public class Relazione {
         return res;
     }
 
-    public Relazione join(Relazione r, String cond){
+    public Relazione join(Relazione r, String condizione){
         String[] new_fields = new String[this.fields_name.length + r.fields_name.length];
 
         System.arraycopy(this.fields_name, 0, new_fields, 0, this.fields_name.length);
@@ -201,16 +211,20 @@ public class Relazione {
         Relazione res = new Relazione("R1(join)", new_fields);
 
         String[] new_row = new String[new_fields.length];
-        String[] cond_parts = cond.split("=");
+        String[] cond_split = condizione.split(" ");
+        int fithis = getFieldIndex(cond_split[0]);
+        int fir = r.getFieldIndex(cond_split[2]);
 
-        int fi1 = getFieldIndex(cond_parts[0]);
-        int fi2 = r.getFieldIndex(cond_parts[1]);
-        if(fi1 != -1 && fi2 != -1){
-            for (String[] row1 : this.data) {
-                System.arraycopy(row1, 0, new_row, 0, row1.length);
-                for (String[] row2 : r.data) {
-                    if(row1[fi1].equals(row2[fi2])){
-                        System.arraycopy(row2, 0, new_row, row1.length, row2.length);
+        for(String[] rthis : this.data){
+            System.arraycopy(rthis, 0, new_row, 0, rthis.length);
+            for(String[] rr : r.data){
+                System.arraycopy(rr, 0, new_row, rthis.length, rr.length);
+                if(cond_split[1].equals("=")){
+                    if(rthis[fithis].equals(rr[fir])){
+                        res.insert(new_row);
+                    }
+                } else if(cond_split[1].equals("<>")){
+                    if(!rthis[fithis].equals(rr[fir])){
                         res.insert(new_row);
                     }
                 }
@@ -218,6 +232,12 @@ public class Relazione {
         }
         return res;
     }
+
+
+//    //natural join diversa dalla join normale
+//    public Relazione nJoin(Relazione r, String cond){
+//
+//    }
 }
 
 

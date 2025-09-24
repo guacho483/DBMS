@@ -18,24 +18,17 @@ public class Main {
 
 
             //MAIN CON FILE CSV
-            Relazione r = Relazione.load("./", "Studente");
+            Relazione r = Relazione.load("", "Studente");
 
-            Relazione r1 = Relazione.load("./", "Aule");
+            Relazione r1 = Relazione.load("", "Aula");
 
-            Relazione r2 = Relazione.load("./", "Docenti");
+            Relazione r2 = Relazione.load("", "Docente");
 
             if(r !=null && r1 !=null && r2 !=null) {
                 System.out.println(r.proiezione(new String[]{"Nome", "Cognome"}));
                 System.out.println(r.crossProduct(r1));
                 System.out.println(r.union(r2));
+                System.out.println(r.join(r2, "Classe = ClasseId"));
             }
-
-
-
-
-
-
-
-
         }
     }
